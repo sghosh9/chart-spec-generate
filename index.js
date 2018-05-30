@@ -1,0 +1,127 @@
+var fs = require('fs'),
+  path = '../develop/src/viz/',
+  // path = '../charttest/',
+  filePath,
+  fileData,
+  chartList = [
+    'angulargauge',
+    'area2d',
+    'bar2d',
+    'bar3d',
+    'boxandwhisker2d',
+    'bubble',
+    'bulb',
+    'candlestick',
+    'column2d',
+    'column3d',
+    'cylinder',
+    'doughnut2d',
+    'doughnut3d',
+    'dragarea',
+    'dragcolumn2d',
+    'dragline',
+    'dragnode',
+    'errorbar2d',
+    'errorline',
+    'errorscatter',
+    'funnel',
+    'gantt',
+    'hbullet',
+    'heatmap',
+    'histogram',
+    'hled',
+    'hlineargauge',
+    'inversemsarea',
+    'inversemscolumn2d',
+    'inversemsline',
+    'kagi',
+    'line',
+    'logmscolumn2d',
+    'logmsline',
+    'logstackedcolumn2d',
+    'marimekko',
+    'msarea',
+    'msbar2d',
+    'msbar3d',
+    'mscolumn2d',
+    'mscolumn3d',
+    'mscolumn3dlinedy',
+    'mscolumnline3d',
+    'mscombi2d',
+    'mscombi3d',
+    'mscombidy2d',
+    'msline',
+    'msspline',
+    'mssplinearea',
+    'mssplinedy',
+    'msstackedcolumn2d',
+    'msstackedcolumn2dlinedy',
+    'msstackedcolumn2dsplinedy',
+    'msstepline',
+    'multiaxisline',
+    'multilevelpie',
+    'overlappedbar2d',
+    'overlappedcolumn2d',
+    'pareto2d',
+    'pareto3d',
+    'pie2d',
+    'pie3d',
+    'pyramid',
+    'radar',
+    'realtimearea',
+    'realtimecolumn',
+    'realtimeline',
+    'realtimelinedy',
+    'realtimestackedarea',
+    'realtimestackedcolumn',
+    'scatter',
+    'scrollarea2d',
+    'scrollcolumn2d',
+    'scrollcombi2d',
+    'scrollcombidy2d',
+    'scrollline2d',
+    'scrollstackedcolumn2d',
+    'selectscatter',
+    'sparkcolumn',
+    'sparkline',
+    'sparkwinloss',
+    'spline',
+    'splinearea',
+    'stackedarea2d',
+    'stackedbar2d',
+    'stackedbar3d',
+    'stackedcolumn2d',
+    'stackedcolumn2dline',
+    'stackedcolumn3d',
+    'stackedcolumn3dline',
+    'stackedcolumn3dlinedy',
+    'thermometer',
+    'treemap',
+    'vbullet',
+    'vled',
+    'waterfall2d',
+    'zoomline',
+    'zoomlinedy',
+    'zoomscatter'
+  ];
+
+// 1. Loop through chartList
+// 2. For each item -
+// 2.1. Check if [item].spec.js exists, if not procees
+// 2.2. Create [item].spec.js
+// 2.3. Copy content of template.spec.js and replace __CHART_TYPE__ with the item
+// 2.4. Fill [item].spec.js with above content
+
+fs.readFile('template.spec.js', 'utf8', (err, data) => {
+  if (err) throw err;
+  chartList.forEach(element => {
+    fileData = data.replace('__CHART_TYPE__', element);
+    filePath = path + element + '.spec.js';
+    if (!fs.existsSync(filePath)) {
+      fs.writeFile(filePath, fileData, function (err) {
+        if (err) throw err;
+        console.log('Saved ' + element + '.spec.js!');
+      });
+    }
+  });
+});
