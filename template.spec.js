@@ -2,18 +2,16 @@ import FusionCharts from '../core';
 import chartType from './__CHART_TYPE__';
 import chartValidator from '../_internal/misc/test-sanity/template.sanity';
 import ignoreCaseExt from '../features/ignore-case-ext';
-import { setup, dispose, resizeDimensions } from '../_internal/misc/test-sanity/utility';
+import { setup, resizeDimensions, CONTAINER_ID } from '../_internal/misc/test-sanity/utility';
 import { extend2 } from '../_internal/lib/lib';
 import CommonTests from '../_internal/misc/test-sanity/common.sanity';
 
 FusionCharts.addDep(chartType);
 FusionCharts.addDep(ignoreCaseExt);
-
-const CONTAINER_ID = 'test-chart';
-var chartObj, svgElement, updateComplete, resizeComplete, chart,
-  chartID = chartType.getName(), doc = window.document;
+var svgElement, chartID = chartType.getName(), doc = window.document;
 
 describe('Running common chart tests for ' + chartID, () => {
+  var chart, chartObj;
   beforeEach(() => {
     chart = {
       type: chartID,
@@ -23,7 +21,7 @@ describe('Running common chart tests for ' + chartID, () => {
     chartObj = setup(FusionCharts, chart);
   });
   afterEach(() => {
-    dispose();
+    if (chartObj && !chartObj.disposed) chartObj.dispose();
   });
   CommonTests.forEach((test) => {
     it(test.name, (done) => {
@@ -46,6 +44,7 @@ describe('Running common chart tests for ' + chartID, () => {
 });
 
 describe('Chart basic testing: ' + chartType.getName(), () => {
+  var chart, chartObj, itResize;
   beforeEach(() => {
     chart = {
       type: chartID,
@@ -55,49 +54,52 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
     chartObj = setup(FusionCharts, chart);
   });
   afterEach(() => {
-    dispose();
+    if (chartObj && !chartObj.disposed) chartObj.dispose();
   });
 
   // 1. RENDER
   it('Rendered chart validation passes', (done) => {
     expect(chartObj).toBeDefined();
-    chartObj.render(() => {
+    let renderComplete = () => {
       svgElement = document.getElementById(chartObj.id);
       expect(chartValidator.BASIC.validate(svgElement)).toBe(true);
       done();
-    });
+    };
+    chartObj.render();
+    chartObj.addEventListener('renderComplete', renderComplete);
   });
 
   // 2. UPDATE
   it('Chart update passes', (done) => {
     expect(chartObj).toBeDefined();
-    chartObj.render(() => {
-      updateComplete = () => {
+    var called = 0;
+    let renderComplete = () => {
+      // console.log(e);
+      if (called === 0) { // Initial Data
+        called++;
+        chartObj.setChartData(chartValidator.BASIC.updateChart, 'json');
+      } else if (called === 1) { // Final Data
         svgElement = document.getElementById(chartObj.id);
         expect(chartValidator.BASIC.updateValidate(svgElement)).toBe(true);
         done();
-      };
-
-      chartObj.addEventListener('renderComplete', updateComplete);
-
-      chartObj.setChartData(chartValidator.BASIC.updateChart, 'json');
-    });
+      }
+    };
+    chartObj.addEventListener('renderComplete', renderComplete);
+    chartObj.render();
   });
 
   // 3. RESIZE
   // We should be able to carry out resize for a set of dimensions.
-  var itResize = resizeDimensions => {
+  itResize = resizeDimensions => {
     it('Chart resize passes for ' + resizeDimensions.width + ' x ' + resizeDimensions.height, (done) => {
       expect(chartObj).toBeDefined();
+      let renderComplete = () => {
+        svgElement = document.getElementById(chartObj.id);
+        expect(chartValidator.BASIC.resizeValidate(svgElement)).toBe(true);
+        done();
+      };
+      chartObj.addEventListener('renderComplete', renderComplete);
       chartObj.render(() => {
-        resizeComplete = () => {
-          svgElement = document.getElementById(chartObj.id);
-          expect(chartValidator.BASIC.resizeValidate(svgElement)).toBe(true);
-          done();
-        };
-
-        chartObj.addEventListener('renderComplete', resizeComplete);
-
         chartObj.resizeTo(resizeDimensions.width, resizeDimensions.height);
       });
     });
@@ -108,6 +110,7 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
 });
 
 describe('Chart EI testing: ' + chartType.getName(), () => {
+  var chart, chartObj, eiMethods;
   beforeEach(() => {
     chart = {
       type: chartID,
@@ -117,17 +120,19 @@ describe('Chart EI testing: ' + chartType.getName(), () => {
     chartObj = setup(FusionCharts, chart);
   });
   afterEach(() => {
-    dispose();
+    if (chartObj && !chartObj.disposed) chartObj.dispose();
   });
 
-  var eiMethods = methodObj => {
+  eiMethods = methodObj => {
     it(methodObj.name, (done) => {
       expect(chartObj).toBeDefined();
-      chartObj.render(() => {
+      let renderComplete = () => {
         svgElement = document.getElementById(chartObj.id);
         expect(methodObj.fn(svgElement, chartObj)).toBe(true);
         done();
-      });
+      };
+      chartObj.render();
+      chartObj.addEventListener('addEventListener', renderComplete);
     });
   };
 
