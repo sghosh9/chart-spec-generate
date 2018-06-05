@@ -132,7 +132,7 @@ describe('Chart EI testing: ' + chartType.getName(), () => {
         done();
       };
       chartObj.render();
-      chartObj.addEventListener('addEventListener', renderComplete);
+      chartObj.addEventListener('renderComplete', renderComplete);
     });
   };
 
