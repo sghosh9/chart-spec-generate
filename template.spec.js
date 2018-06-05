@@ -62,7 +62,8 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
     expect(chartObj).toBeDefined();
     let renderComplete = () => {
       svgElement = document.getElementById(chartObj.id);
-      expect(chartValidator.BASIC.validate(svgElement)).toBe(true);
+      let response = chartValidator.BASIC.validate(svgElement);
+      expect(response.flag).toBe(true, response.messages.join(' && '));
       done();
     };
     chartObj.render();
@@ -80,7 +81,8 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
         chartObj.setChartData(chartValidator.BASIC.updateChart, 'json');
       } else if (called === 1) { // Final Data
         svgElement = document.getElementById(chartObj.id);
-        expect(chartValidator.BASIC.updateValidate(svgElement)).toBe(true);
+        let response = chartValidator.BASIC.updateValidate(svgElement);
+        expect(response.flag).toBe(true, response.messages.join(' && '));
         done();
       }
     };
@@ -95,7 +97,8 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
       expect(chartObj).toBeDefined();
       let renderComplete = () => {
         svgElement = document.getElementById(chartObj.id);
-        expect(chartValidator.BASIC.resizeValidate(svgElement)).toBe(true);
+        let response = chartValidator.BASIC.resizeValidate(svgElement);
+        expect(response.flag).toBe(true, response.messages.join(' && '));
         done();
       };
       chartObj.addEventListener('renderComplete', renderComplete);
