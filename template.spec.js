@@ -1,5 +1,3 @@
-// /* eslint-disable */
-
 import FusionCharts from '../core';
 import chartType from './__CHART_TYPE__';
 import chartValidator from '../_internal/misc/test-sanity/template.sanity';
@@ -58,6 +56,7 @@ describe('Chart basic testing: ' + chartName, () => {
     renderAt: CONTAINER_ID
   };
   extend2(chart, renderData);
+  // eslint-disable-next-line
   chart.dataSource = chart.dataSource ? chart.dataSource : chartData[chartID]['default'];
   chart.dataSource.chart.animation = '0';
 
@@ -128,6 +127,7 @@ describe('Chart EI testing: ' + chartType.getName(), () => {
     renderAt: CONTAINER_ID
   };
   extend2(chart, renderData);
+  // eslint-disable-next-line
   chart.dataSource = chart.dataSource ? chart.dataSource : chartData[chartID]['default'];
   chart.dataSource.chart.animation = '0';
 
