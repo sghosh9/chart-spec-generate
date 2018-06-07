@@ -1,56 +1,67 @@
+// /* eslint-disable */
+
 import FusionCharts from '../core';
 import chartType from './__CHART_TYPE__';
 import chartValidator from '../_internal/misc/test-sanity/template.sanity';
 import ignoreCaseExt from '../features/ignore-case-ext';
-import { setup, resizeDimensions, CONTAINER_ID } from '../_internal/misc/test-sanity/utility';
+import { setup, getSVG, initDimensions, resizeDimensions, CONTAINER_ID } from '../_internal/misc/test-sanity/utility';
 import { extend2 } from '../_internal/lib/lib';
 import CommonTests from '../_internal/misc/test-sanity/common.sanity';
+import * as chartData from '../_internal/misc/test-data/data-by-chart';
 
 FusionCharts.addDep(chartType);
 FusionCharts.addDep(ignoreCaseExt);
-var svgElement, chartID = chartType.getName(), doc = window.document;
+var svgElement, chartName = chartType.getName(), chartID = chartName.toLowerCase(), doc = window.document;
 
-describe('Running common chart tests for ' + chartID, () => {
-  var chart, chartObj;
-  beforeEach(() => {
-    chart = {
-      type: chartID,
-      renderAt: CONTAINER_ID
-    };
-    extend2(chart, chartValidator.BASIC.newChart);
-    chartObj = setup(FusionCharts, chart);
-  });
-  afterEach(() => {
-    if (chartObj && !chartObj.disposed) chartObj.dispose();
-  });
+describe('Running common chart tests for ' + chartName, () => {
+  var chart = {
+      type: chartName,
+      renderAt: CONTAINER_ID,
+      width: initDimensions.width,
+      height: initDimensions.height,
+      dataFormat: 'json',
+      dataSource: {}
+    },
+    config = { chartID: chartID, chart: chart, document: doc, chartWrapperId: CONTAINER_ID };
+
   CommonTests.forEach((test) => {
-    it(test.name, (done) => {
-      var config = { document: doc, chartWrapperId: CONTAINER_ID, chartConfig: chart };
-      if (test.configRequired) {
-        // Run tests which need dom check
-        test.run(chartObj, config, (result) => {
+    var itArr;
+    if (test.name && test.run) {
+      it(test.name, (done) => {
+        test.run(config, (result) => {
           expect(result).toBe(true);
           done();
         });
-      } else {
-        // Run tests which doesn't need dom check
-        test.run(chartObj, (result) => {
-          expect(result).toBe(true);
-          done();
+      });
+    } else if (test.iterator) {
+      // Iterate over an array of run methods.
+      itArr = test.iterator(chart);
+      itArr.forEach((subTest) => {
+        it(subTest.name, (done) => {
+          subTest.run(config, (result) => {
+            expect(result).toBe(true);
+            done();
+          });
         });
-      }
-    });
+      });
+    }
   });
 });
 
-describe('Chart basic testing: ' + chartType.getName(), () => {
-  var chart, chartObj, itResize;
+describe('Chart basic testing: ' + chartName, () => {
+  var chart, chartObj, itResize,
+    renderData = chartValidator.BASIC.newChart,
+    updateData = chartValidator.BASIC.updateChart;
+
+  chart = {
+    type: chartID,
+    renderAt: CONTAINER_ID
+  };
+  extend2(chart, renderData);
+  chart.dataSource = chart.dataSource ? chart.dataSource : chartData[chartID]['default'];
+  chart.dataSource.chart.animation = '0';
+
   beforeEach(() => {
-    chart = {
-      type: chartID,
-      renderAt: CONTAINER_ID
-    };
-    extend2(chart, chartValidator.BASIC.newChart);
     chartObj = setup(FusionCharts, chart);
   });
   afterEach(() => {
@@ -61,8 +72,7 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
   it('Rendered chart validation passes', (done) => {
     expect(chartObj).toBeDefined();
     let renderComplete = () => {
-      svgElement = document.getElementById(chartObj.id);
-      let response = chartValidator.BASIC.validate(svgElement);
+      let response = chartValidator.BASIC.validate(chartObj);
       expect(response.flag).toBe(true, response.messages.join(' && '));
       done();
     };
@@ -75,13 +85,11 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
     expect(chartObj).toBeDefined();
     var called = 0;
     let renderComplete = () => {
-      // console.log(e);
       if (called === 0) { // Initial Data
         called++;
-        chartObj.setChartData(chartValidator.BASIC.updateChart, 'json');
+        chartObj.setChartData(updateData || chart.dataSource, 'json');
       } else if (called === 1) { // Final Data
-        svgElement = document.getElementById(chartObj.id);
-        let response = chartValidator.BASIC.updateValidate(svgElement);
+        let response = chartValidator.BASIC.updateValidate(chartObj);
         expect(response.flag).toBe(true, response.messages.join(' && '));
         done();
       }
@@ -96,8 +104,7 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
     it('Chart resize passes for ' + resizeDimensions.width + ' x ' + resizeDimensions.height, (done) => {
       expect(chartObj).toBeDefined();
       let renderComplete = () => {
-        svgElement = document.getElementById(chartObj.id);
-        let response = chartValidator.BASIC.resizeValidate(svgElement);
+        let response = chartValidator.BASIC.resizeValidate(chartObj);
         expect(response.flag).toBe(true, response.messages.join(' && '));
         done();
       };
@@ -113,13 +120,18 @@ describe('Chart basic testing: ' + chartType.getName(), () => {
 });
 
 describe('Chart EI testing: ' + chartType.getName(), () => {
-  var chart, chartObj, eiMethods;
+  var chart, chartObj, eiMethods,
+    renderData = chartValidator.BASIC.newChart;
+
+  chart = {
+    type: chartID,
+    renderAt: CONTAINER_ID
+  };
+  extend2(chart, renderData);
+  chart.dataSource = chart.dataSource ? chart.dataSource : chartData[chartID]['default'];
+  chart.dataSource.chart.animation = '0';
+
   beforeEach(() => {
-    chart = {
-      type: chartID,
-      renderAt: CONTAINER_ID
-    };
-    extend2(chart, chartValidator.BASIC.newChart);
     chartObj = setup(FusionCharts, chart);
   });
   afterEach(() => {
@@ -130,7 +142,7 @@ describe('Chart EI testing: ' + chartType.getName(), () => {
     it(methodObj.name, (done) => {
       expect(chartObj).toBeDefined();
       let renderComplete = () => {
-        svgElement = document.getElementById(chartObj.id);
+        svgElement = getSVG(chartObj);
         expect(methodObj.fn(svgElement, chartObj)).toBe(true);
         done();
       };
