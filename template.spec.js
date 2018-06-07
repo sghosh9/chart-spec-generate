@@ -15,7 +15,7 @@ var svgElement, chartName = chartType.getName(), chartID = chartName.toLowerCase
 
 describe('Running common chart tests for ' + chartName, () => {
   var chart = {
-      type: chartName,
+      type: chartID,
       renderAt: CONTAINER_ID,
       width: initDimensions.width,
       height: initDimensions.height,
