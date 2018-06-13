@@ -120,7 +120,7 @@ describe('Chart basic testing: ' + chartName, () => {
 
 describe('Chart EI testing: ' + chartType.getName(), () => {
   var chart, chartObj, eiMethods,
-    renderData = chartValidator.BASIC.newChart;
+    renderData = chartValidator.EI.newChart;
 
   chart = {
     type: chartID,
@@ -143,11 +143,13 @@ describe('Chart EI testing: ' + chartType.getName(), () => {
       expect(chartObj).toBeDefined();
       let renderComplete = () => {
         svgElement = getSVG(chartObj);
-        expect(methodObj.fn(svgElement, chartObj)).toBe(true);
-        done();
+        methodObj.fn(svgElement, chartObj, (result) => {
+          expect(result).toBe(true);
+          done();
+        });
       };
-      chartObj.render();
       chartObj.addEventListener('renderComplete', renderComplete);
+      chartObj.render();
     });
   };
 
